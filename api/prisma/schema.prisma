@@ -1,0 +1,28 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model messages {
+  id                              String    @id @db.Uuid
+  date_created                    DateTime? @db.Timestamptz(6)
+  author                          String?   @db.Uuid
+  recipient                       String?   @db.Uuid
+  text                            String?
+  users_messages_authorTousers    users?    @relation("messages_authorTousers", fields: [author], references: [id], onUpdate: NoAction, map: "messages_author_foreign")
+  users_messages_recipientTousers users?    @relation("messages_recipientTousers", fields: [recipient], references: [id], onUpdate: NoAction, map: "messages_recipient_foreign")
+}
+
+model users {
+  id                                 String     @id @db.Uuid
+  email                              String?    @unique(map: "users_email_unique") @db.VarChar(255)
+  password                           String?    @db.VarChar(255)
+  salt                               String?    @db.VarChar(255)
+  messages_messages_authorTousers    messages[] @relation("messages_authorTousers")
+  messages_messages_recipientTousers messages[] @relation("messages_recipientTousers")
+}
